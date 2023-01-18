@@ -15,6 +15,22 @@ pip install -r Requirements.txt
 pyinstaller grassfire_simulation.spec
 ```
 
+## Run
+This program is easy to run, the -h flag can be set for quick reminders.
+example of execution after build:
+```bash
+./dist/grassfire_simulation 10 10 --obstacles 10
+```
+The first two positional arguments are columns and rows respectively.
+the --obstacles flag can be set to change the % of obstacles populated from default value of 10
+
+## Contributors
+Project Lead: Amir Shabani <br>
+Lead Developer: Brian Atkinson<br>
+
+---
+
+## ASSIGNMENT GUIDLINES
 ## Objective: 
 Examine a graph-based path planning algorithm for robot motion planning. 
 
