@@ -72,7 +72,7 @@ class BoardWidget(QWidget):
         self.obstacles = obstacles
         self.playing_board = Board(columns, rows, obstacles)
         self.cell_size = 20  # You can set this to any value you like
-        self.setFixedSize((columns * self.cell_size), (rows * self.cell_size))
+        self.setFixedSize((columns * self.cell_size) + 150, (rows * self.cell_size) + 20)
 
     def paintEvent(self, event):
         qp = QPainter()
@@ -86,36 +86,23 @@ class BoardWidget(QWidget):
                 else:
                     distance = self.playing_board.distances[x][y]
                     qp.setBrush(QColor(255, 255, 255))
-                    qp.drawRect(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size)
-        qp.end()
-
-
-    def paintEvent(self, event):
-        qp = QPainter()
-
-        qp.begin(self)
-        for x in range(self.rows):
-            for y in range(self.columns):
-                if self.playing_board.is_obstacle(x, y):
-                    qp.setBrush(QColor(0, 0, 0))
-                    qp.setPen(QColor(255, 255, 255))
-                else:
-                    distance = self.playing_board.distances[x][y]
-                    qp.setBrush(QColor(255, 255, 255))
-                    qp.drawRect(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size)
+                    shift_horiz = 90
+                    shift_vert = 10
+                    qp.drawRect(y * self.cell_size + shift_horiz, x * self.cell_size + shift_vert, self.cell_size, self.cell_size)
+                    # qp.drawRect(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size)
                     if (x, y) == self.playing_board.start:
                         qp.setPen(QColor(0, 0, 0))
-                        qp.drawText(QRectF(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size),
+                        qp.drawText(QRectF(y * self.cell_size + shift_horiz, x * self.cell_size + shift_vert, self.cell_size, self.cell_size),
                                     QtCore.Qt.AlignmentFlag.AlignCenter,
                                     "S")
                     elif (x, y) == self.playing_board.end:
                         qp.setPen(QColor(0, 0, 0))
-                        qp.drawText(QRectF(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size),
+                        qp.drawText(QRectF(y * self.cell_size + shift_horiz, x * self.cell_size + shift_vert, self.cell_size, self.cell_size),
                                     QtCore.Qt.AlignmentFlag.AlignCenter,
                                     "E")
                     elif distance != -1:
                         qp.setPen(QColor(255, 0, 0))
-                        qp.drawText(QRectF(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size),
+                        qp.drawText(QRectF(y * self.cell_size + shift_horiz, x * self.cell_size + shift_vert, self.cell_size, self.cell_size),
                                     QtCore.Qt.AlignmentFlag.AlignCenter,
                                     str(distance))
         qp.end()
