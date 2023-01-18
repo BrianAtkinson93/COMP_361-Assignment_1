@@ -8,7 +8,12 @@ COMP_361 <br>
 Amir Shabani, PhD. P.Eng
 
 ---
-
+## Build
+In order to build the package it is recommended to start a python venv. Then run the following commands.
+```bash
+pip install -r Requirements.txt
+pyinstaller grassfire_simulation.spec
+```
 
 ## Objective: 
 Examine a graph-based path planning algorithm for robot motion planning. 
