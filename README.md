@@ -11,18 +11,32 @@ Amir Shabani, PhD. P.Eng
 ## Build
 In order to build the package it is recommended to start a python venv. Then run the following commands.
 ```bash
+# Install all the required packages to build the binary
 pip install -r Requirements.txt
+```
+```bash
+# Command to build the gui. Places the file in <cwd>/dist/simulation
+pyinstaller simulation.spec
+```
+```bash
+# you can also build and run the commandline version
 pyinstaller grassfire_simulation.spec
+# Run the usage and help command
+./dist/grassfire_simulation -h 
 ```
 
 ## Run
 This program is easy to run, the -h flag can be set for quick reminders.
 example of execution after build:
 ```bash
-./dist/grassfire_simulation 10 10 --obstacles 10
+./dist/simulation
+
+# You can also run the original cmd-line based program
+./dist/grassfire_simulation 15 20 -o 10
+# The first two positional arguments are columns and rows respectively.
+# the --obstacles flag can be set to change the % of obstacles populated 
+# from default value of 10
 ```
-The first two positional arguments are columns and rows respectively.
-the --obstacles flag can be set to change the % of obstacles populated from default value of 10
 
 ## Contributors
 Project Lead: Amir Shabani <br>
