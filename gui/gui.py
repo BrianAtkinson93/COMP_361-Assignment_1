@@ -4,13 +4,14 @@ import sys
 from argparse import ArgumentTypeError
 
 from PyQt6 import QtCore
-from PyQt6.QtCore import QRectF, QTimer, Qt
-from PyQt6.QtGui import QColor, QPainter, QTextOption
+from PyQt6.QtCore import QRectF, QTimer
+from PyQt6.QtGui import QColor, QPainter
 from PyQt6.QtWidgets import QWidget, QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QApplication
 
 
 class Board:
     def __init__(self, columns, rows, obstacles):
+        self.distances = None
         self.columns = columns
         self.rows = rows
         self.obstacles = obstacles
@@ -23,22 +24,22 @@ class Board:
         return self.grid[x][y] == 1
 
     def populate_obstacles(self):
-        for x in range(self.columns):
-            for y in range(self.rows):
+        for x in range(self.rows):
+            for y in range(self.columns):
                 if random.randint(0, 100) < self.obstacles:
                     self.grid[x][y] = 1
 
     def choose_random_start(self):
         while True:
-            x = random.randint(0, self.columns - 1)
-            y = random.randint(0, self.rows - 1)
+            x = random.randint(0, self.rows - 1)
+            y = random.randint(0, self.columns - 1)
             if not self.is_obstacle(x, y):
                 return x, y
 
     def choose_random_end(self):
         while True:
-            x = random.randint(0, self.columns - 1)
-            y = random.randint(0, self.rows - 1)
+            x = random.randint(0, self.rows - 1)
+            y = random.randint(0, self.columns - 1)
             if not self.is_obstacle(x, y):
                 return x, y
 
@@ -50,15 +51,15 @@ class Board:
             x, y = queue.pop(0)
             for dx, dy in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
                 new_x, new_y = x + dx, y + dy
-                if 0 <= new_x < self.columns and 0 <= new_y < self.rows and not self.is_obstacle(new_x, new_y) and \
+                if 0 <= new_x < self.rows and 0 <= new_y < self.columns and not self.is_obstacle(new_x, new_y) and \
                         distances[new_x][new_y] == -1:
                     distances[new_x][new_y] = distances[x][y] + 1
                     queue.append((new_x, new_y))
         self.distances = distances
 
     def output_distances(self):
-        for x in range(self.columns):
-            for y in range(self.rows):
+        for x in range(self.rows):
+            for y in range(self.columns):
                 print(self.distances[x][y], end=" ")
             print()
 
@@ -71,40 +72,55 @@ class BoardWidget(QWidget):
         self.obstacles = obstacles
         self.playing_board = Board(columns, rows, obstacles)
         self.cell_size = 20  # You can set this to any value you like
-        self.setFixedSize(columns * 20, rows * 20)
+        self.setFixedSize((columns * self.cell_size), (rows * self.cell_size))
 
     def paintEvent(self, event):
         qp = QPainter()
 
         qp.begin(self)
-        for x in range(self.columns):
-            for y in range(self.rows):
+        for x in range(self.rows):
+            for y in range(self.columns):
                 if self.playing_board.is_obstacle(x, y):
                     qp.setBrush(QColor(0, 0, 0))
                     qp.setPen(QColor(255, 255, 255))
                 else:
                     distance = self.playing_board.distances[x][y]
                     qp.setBrush(QColor(255, 255, 255))
-                    qp.drawRect(x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size)
+                    qp.drawRect(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size)
+        qp.end()
+
+
+    def paintEvent(self, event):
+        qp = QPainter()
+
+        qp.begin(self)
+        for x in range(self.rows):
+            for y in range(self.columns):
+                if self.playing_board.is_obstacle(x, y):
+                    qp.setBrush(QColor(0, 0, 0))
+                    qp.setPen(QColor(255, 255, 255))
+                else:
+                    distance = self.playing_board.distances[x][y]
+                    qp.setBrush(QColor(255, 255, 255))
+                    qp.drawRect(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size)
                     if (x, y) == self.playing_board.start:
                         qp.setPen(QColor(0, 0, 0))
-                        qp.drawText(QRectF(x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size),
+                        qp.drawText(QRectF(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size),
                                     QtCore.Qt.AlignmentFlag.AlignCenter,
                                     "S")
                     elif (x, y) == self.playing_board.end:
                         qp.setPen(QColor(0, 0, 0))
-                        qp.drawText(QRectF(x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size),
+                        qp.drawText(QRectF(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size),
                                     QtCore.Qt.AlignmentFlag.AlignCenter,
                                     "E")
                     elif distance != -1:
                         qp.setPen(QColor(255, 0, 0))
-                        qp.drawText(QRectF(x * self.cell_size, y * self.cell_size, self.cell_size, self.cell_size),
+                        qp.drawText(QRectF(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size),
                                     QtCore.Qt.AlignmentFlag.AlignCenter,
                                     str(distance))
         qp.end()
 
     def update_board(self):
-        self.clearFocus()
         self.playing_board.run_algorithm()
         self.update()
 
@@ -112,9 +128,11 @@ class BoardWidget(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-
+        self.counter = 0
+        self.min_w = 400
+        self.min_h = 400
         self.setWindowTitle("GrassFire Simulation")
-        self.setFixedSize(600, 600)
+        self.setMinimumSize(self.min_w, self.min_h)
 
         layout = QVBoxLayout()
 
@@ -153,6 +171,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def start_simulation(self):
+        if self.counter != 0:
+            self.remove.removeWidget(self.board_widget)
         width = int(self.width.text())
         height = int(self.height.text())
         obstacles = int(self.obstacle_percentage.text())
@@ -162,14 +182,12 @@ class MainWindow(QMainWindow):
             raise ArgumentTypeError("Obstacle percentage must be between 0 and 100.")
         self.board_widget = BoardWidget(width, height, obstacles)
         self.board_widget.update_board()
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.board_widget.update_board)
-        self.timer.start(1000)
         layout = self.centralWidget().layout()
+        self.remove = layout
         layout.insertWidget(0, self.board_widget)
+        self.counter += 1
 
     def stop_simulation(self):
-        self.timer.stop()
         self.close()
 
 
