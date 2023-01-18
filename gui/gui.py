@@ -77,6 +77,7 @@ class Board:
         self.distances = distances
 
     def output_distances(self) -> None:
+        """ Print the distances to console as matrix"""
         for x in range(self.rows):
             for y in range(self.columns):
                 print(self.distances[x][y], end=" ")
@@ -137,6 +138,8 @@ class BoardWidget(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.remove = None
+        self.board_widget = None
         self.counter = 0
         self.min_w = 400
         self.min_h = 400
