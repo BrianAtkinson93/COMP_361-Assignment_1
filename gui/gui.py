@@ -4,13 +4,16 @@ import sys
 from argparse import ArgumentTypeError
 
 from PyQt6 import QtCore
-from PyQt6.QtCore import QRectF, QTimer
+from PyQt6.QtCore import QRectF
 from PyQt6.QtGui import QColor, QPainter
 from PyQt6.QtWidgets import QWidget, QMainWindow, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QApplication
 
 
 class Board:
     def __init__(self, columns, rows, obstacles):
+        """
+        Initializes the board with given number of columns, rows and obstacles.
+        """
         self.distances = None
         self.columns = columns
         self.rows = rows
@@ -20,30 +23,46 @@ class Board:
         self.start = self.choose_random_start()
         self.end = self.choose_random_end()
 
-    def is_obstacle(self, x, y):
+    def is_obstacle(self, x, y) -> bool:
+        """
+        Returns true if the cell at x, y is an obstacle.
+        """
         return self.grid[x][y] == 1
 
-    def populate_obstacles(self):
+    def populate_obstacles(self) -> None:
+        """
+        Populate the grid with obstacles randomly.
+        """
         for x in range(self.rows):
             for y in range(self.columns):
                 if random.randint(0, 100) < self.obstacles:
                     self.grid[x][y] = 1
 
-    def choose_random_start(self):
+    def choose_random_start(self) -> tuple:
+        """
+        Choose a random location on the board as the start location.
+        """
+
         while True:
             x = random.randint(0, self.rows - 1)
             y = random.randint(0, self.columns - 1)
             if not self.is_obstacle(x, y):
                 return x, y
 
-    def choose_random_end(self):
+    def choose_random_end(self) -> tuple:
+        """
+        Choose a random location on the board as the end location.
+        """
         while True:
             x = random.randint(0, self.rows - 1)
             y = random.randint(0, self.columns - 1)
             if not self.is_obstacle(x, y):
                 return x, y
 
-    def run_algorithm(self):
+    def run_algorithm(self) -> None:
+        """
+        Run the algorithm to calculate the shortest distance from start to end.
+        """
         queue = [self.start]
         distances = [[-1 for _ in range(self.columns)] for _ in range(self.rows)]
         distances[self.start[0]][self.start[1]] = 0
@@ -57,7 +76,7 @@ class Board:
                     queue.append((new_x, new_y))
         self.distances = distances
 
-    def output_distances(self):
+    def output_distances(self) -> None:
         for x in range(self.rows):
             for y in range(self.columns):
                 print(self.distances[x][y], end=" ")
@@ -71,10 +90,13 @@ class BoardWidget(QWidget):
         self.rows = rows
         self.obstacles = obstacles
         self.playing_board = Board(columns, rows, obstacles)
-        self.cell_size = 20  # You can set this to any value you like
-        self.setFixedSize((columns * self.cell_size) + 150, (rows * self.cell_size) + 20)
+        self.cell_size = 20
+        self.horizontal_padding = 150
+        self.vertical_padding = 20
+        self.setFixedSize((columns * self.cell_size) + self.horizontal_padding, (rows * self.cell_size) + self.vertical_padding)
 
     def paintEvent(self, event):
+        """Handles the painting of the grid on the widget"""
         qp = QPainter()
 
         qp.begin(self)
@@ -89,7 +111,6 @@ class BoardWidget(QWidget):
                     shift_horiz = 90
                     shift_vert = 10
                     qp.drawRect(y * self.cell_size + shift_horiz, x * self.cell_size + shift_vert, self.cell_size, self.cell_size)
-                    # qp.drawRect(y * self.cell_size, x * self.cell_size, self.cell_size, self.cell_size)
                     if (x, y) == self.playing_board.start:
                         qp.setPen(QColor(0, 0, 0))
                         qp.drawText(QRectF(y * self.cell_size + shift_horiz, x * self.cell_size + shift_vert, self.cell_size, self.cell_size),
@@ -108,6 +129,7 @@ class BoardWidget(QWidget):
         qp.end()
 
     def update_board(self):
+        """ Updates the board based on running a new iteration of the algorithm"""
         self.playing_board.run_algorithm()
         self.update()
 
