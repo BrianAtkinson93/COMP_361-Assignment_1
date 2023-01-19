@@ -17,6 +17,7 @@ class Board:
         self.board_layout = [[Cell(x, y) for x in range(self.width)] for y in range(self.height)]
         self.start = (random.randint(0, self.height - 1), random.randint(0, self.width - 1))
         self.end = (random.randint(0, self.height - 1), random.randint(0, self.width - 1))
+
         self.populate()
 
     def populate(self):
@@ -32,11 +33,16 @@ class Board:
 
     def run_simulation(self):
         """
-        This function simulates the pathfinding algorithm by initializing a 2D list to store the distance values,
-        setting the distance at the starting point to 0, creating a queue to hold the cells to be checked,
-        and while there are cells to be checked, it gets the next cell from the queue, gets the distance value for the current cell,
-        checks the cells adjacent to the current cell, and updates the distance value for the adjacent cell and add the
-        adjacent cell to the queue
+        This function simulates the pathfinding algorithm by:
+         - initializing a 2D list to store the distance values
+         - setting the distance at the starting point to 0
+         - creating a queue to hold the cells to be checked
+         - while there are cells to be checked:
+                - get the next cell from the queue
+                - get the distance value for the current cell
+                - check the cells adjacent to the current cell
+                - update the distance value for the adjacent cell(s)
+                - add the adjacent cell to the queue
         """
         # Create a 2D list to store the distance values
         self.distances = [[-1 for _ in range(self.width)] for _ in range(self.height)]
@@ -63,13 +69,24 @@ class Board:
                 queue.append((x, y))
 
     def output_map(self):
-        for i, row in enumerate(self.board_layout):
-            for j, cell in enumerate(row):
+        """
+        Outputs the map of the board
+         - S represents the starting point
+         - E represents the end point
+         - X represents obstacles
+         - 0 represents empty spaces.
+
+        The map is displayed with the bottom left corner as the origin (0,0)
+         - The x-axis represents the horizontal direction (right)
+         - The y-axis represents the vertical direction (up)
+        """
+        for i in range(self.height - 1, -1, -1):
+            for j in range(self.width):
                 if (i, j) == self.start:
                     print("S", end=" ")
                 elif (i, j) == self.end:
                     print("E", end=" ")
-                elif cell.is_obstacle:
+                elif self.board_layout[i][j].is_obstacle:
                     print("X", end=" ")
                 else:
                     print("0", end=" ")
@@ -77,8 +94,16 @@ class Board:
         print('\n')
 
     def output_distances(self):
-        for row in self.distances:
-            print(row)
-        print("\n")
-        print("Start:", self.start)
-        print("End:", self.end)
+        """
+        Prints the distance values of each cell on the board in a grid format with the start and end points labeled.
+         - The output is reversed to match the standard x,y plane direction of x = horizontal, y = vertical.
+        """
+        for i in range(self.height - 1, -1, -1):
+            for j in range(self.width):
+                val = self.distances[i][j]
+                print("{:>3}".format(val), end=" ")
+            print()
+        print("\nStart:", self.start[::-1])
+        print("End:", self.end[::-1])
+
+
